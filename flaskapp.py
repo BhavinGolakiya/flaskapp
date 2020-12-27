@@ -9,8 +9,8 @@ from flask_autoindex import AutoIndex
 import uuid
 import shutil
 
-UPLOAD_FOLDER = 'htmlfile'
-ppath = "htmlfile"
+UPLOAD_FOLDER = '/app/htmlfile'
+ppath = "/app/htmlfile"
 
 app = Flask(__name__)
 CORS(app)
@@ -42,3 +42,27 @@ def upload_file():
         random_name  = uuid.uuid4().hex.lower()[0:6]
         pdf_name = '.pdf'
         o_name = "".join([random_name,pdf_name])
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], o_name))
+        # path = "/app/htmlfile/"+o_name+""
+        path = os.path.join(app.config['UPLOAD_FOLDER'], o_name)
+
+        try:
+            print(path)
+            print("-----------------------------------------")
+            subprocess.call(["pdf2htmlEX" ,path], shell=True)
+            print("=========================================")
+            # htmlfile = "".join([random_name,'.html'])
+            # shutil.move("/app/"+htmlfile+"", "/app/htmlfile/"+htmlfile+"")
+        except Exception as e:
+            print(e)
+        data = jsonify({'message' : 'File successfully converted',"file": "".join([random_name,'.html'])})
+        data.status_code = 201
+        # os.remove("/app/htmlfile/"+o_name+"")
+        return data
+    else:
+        resp = jsonify({'message' : 'Allowed file types pdf'})
+        resp.status_code = 400
+        return resp
+
+if __name__ == "__main__":
+    app.run()
